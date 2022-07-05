@@ -23,7 +23,6 @@ class UserView(APIView):
         if user_serializer.is_valid(raise_exception=True):
             user_serializer.save()
             return Response({"messages" : "가입 성공"})
-            # return Response(user_serializer.data, status=status.HTTP_200_OK)
 
         else:
             print(serializers.errors)
