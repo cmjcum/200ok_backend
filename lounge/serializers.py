@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from deeplearning.deeplearning_make_portrait import make_portrait
 from .models import Board
 from user.models import User, UserInfo
 from dormitory.models import Dormitory
@@ -9,7 +10,10 @@ class DormitoriesSerializer(serializers.ModelSerializer):
     users = serializers.SerializerMethodField()
 
     def get_users(self, obj):
-        return obj.userinfo_set.filter(dormitory=obj.id).values()
+        users = obj.userinfo_set.filter(dormitory=obj.id).values()
+        portrait = obj.userinfo_set.filter(dormitory=obj.id)[0].portrait
+        users.portrait = portrait
+        return users
 
     class Meta:
         model = Dormitory
@@ -30,9 +34,14 @@ class DormitorySerializer(serializers.ModelSerializer):
 class BoardSerializer(serializers.ModelSerializer):
     icon = serializers.SerializerMethodField(read_only=True)
     author_name = serializers.SerializerMethodField(read_only=True)
+    created = serializers.SerializerMethodField(read_only=True)
+    dorm_name = serializers.SerializerMethodField(read_only=True)
 
     def get_author_name(self, obj):
-        return User.objects.get(username=obj.author)
+        return User.objects.get(username=obj.author).fullname
+
+    def get_dorm_name(self, obj):
+        return obj.author.userinfo.dormitory.name
 
     def get_icon(self, obj):
         try:
@@ -42,6 +51,9 @@ class BoardSerializer(serializers.ModelSerializer):
             return icon
         except:
             return ''
+
+    def get_created(self, obj):
+        return dateformat.format(obj.created, 'y.m.d')
 
     def validate(self, data):
         if len(data.get('content')) <= 5:
@@ -74,12 +86,12 @@ class BoardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class LoungeSerializer(serializers.ModelSerializer):
+class UserInfoSerializer(serializers.ModelSerializer):
     portrait = serializers.SerializerMethodField(read_only=True)
     dormitory_name = serializers.SerializerMethodField(read_only=True)
 
     def get_portrait(self, obj):
-        portrait = obj.userinfo.portrait.url
+        portrait = obj.userinfo.portrait
         return portrait
 
     def get_dormitory_name(self, obj):

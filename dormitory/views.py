@@ -1,25 +1,27 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import render
-from dormitory.serializers import DormUserSerializer
-from user.models import UserInfo
+from dormitory.serializers import DormUserSerializer, QuestionSerializer
+from user.models import User, UserInfo
+from dormitory.models import Question
 
 
-# Create your views here.
-class MyRoomView(APIView):
+class DormitoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user
 
         return Response(DormUserSerializer(user).data)
 
 
-class DormitoryView(APIView):
+class Questionview(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        user = request.user
-        dormitory = UserInfo.objects.get(user=user).dormitory
-        print(dormitory.name, dormitory.id)
+        questions = Question.objects.all()
+        question_serializer = QuestionSerializer(questions, many=True).data
 
-        return Response({'dormitory_name': dormitory.name, 'dormitory_id': dormitory.id})
-        # return render(request, 'room/dormitory.html', {'dormitory': dormitory})
-
+        return Response({'questions': question_serializer}, status=status.HTTP_200_OK)

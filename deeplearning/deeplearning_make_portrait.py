@@ -21,6 +21,8 @@ import cv2
 
 import easydict
 
+import random
+
 def load_checkpoints(config_path, checkpoint_path, cpu=False):
 
     with open(config_path) as f:
@@ -78,7 +80,7 @@ def make_animation(source_image, driving_video, generator, kp_detector, relative
     return predictions
 
 
-def make_portrait(q, img_path):
+def make_portrait(q, img_path, user_id):
     opt = easydict.EasyDict({
         'config': 'deeplearning/config/vox-256.yaml',
         'checkpoint': 'vox-cpk.pth.tar',
@@ -91,9 +93,11 @@ def make_portrait(q, img_path):
         'find_best_frame': False
     })
     
-    # source_image = imageio.imread('https://blog.kakaocdn.net/dn/SJOlU/btrnjc5wccD/2tVeCAdG9UVWi3fsrqVYxk/img.jpg')
     source_image = imageio.imread(img_path)
-    reader = imageio.get_reader('04.mp4')
+
+    rand = random.randrange(1, 5)
+    video_path = f'deeplearning/original_video/{rand}.mp4'
+    reader = imageio.get_reader(video_path)
 
     fps = reader.get_meta_data()['fps']
     driving_video = []
@@ -110,11 +114,12 @@ def make_portrait(q, img_path):
 
     predictions = make_animation(source_image, driving_video, generator, kp_detector, relative=opt.relative, adapt_movement_scale=opt.adapt_scale, cpu=opt.cpu)
    
-    net = cv2.dnn.readNetFromTorch('deeplearning/painting_model/style5.t7')
+    rand = random.randrange(1, 6)
+    model_path = f'deeplearning/painting_model/style_model{rand}.t7'
 
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWriter('output.avi', fourcc, 30.0, (256, 256))
+    net = cv2.dnn.readNetFromTorch(model_path)
     
+    new_frames = []
     for frame in predictions:
         frame = img_as_ubyte(frame)
 
@@ -130,8 +135,18 @@ def make_portrait(q, img_path):
         output = np.clip(output, 0, 255)
         output = output.astype('uint8')
 
-        out.write(output)
+        output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
+
+        new_frames.append(output)
+
+    filename = f'{user_id}.gif'
+    imageio.mimsave(filename, new_frames, fps=fps)
+
+    os.system(f'aws s3 cp {filename} s3://200okbucket --acl public-read')
+    os.system(f'rm {filename}')
+
+    portrait_url = f'https://200okbucket.s3.ap-northeast-2.amazonaws.com/{user_id}.gif'
 
     cv2.destroyAllWindows()
-    q.put('end')
+    q.put(portrait_url)
 

@@ -144,8 +144,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [ # session 혹은 token을 인증 할 클래스 설정
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
         # simplejwt 추가
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         # pip install djangorestframework-simplejwt 인스톨 코드
@@ -156,6 +156,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser',
     ]
 }
+
 
 SIMPLE_JWT = {
 		# Access 토큰 유효 시간 설정하기
@@ -197,3 +198,5 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "https://polite-custard-ele033.netlify.app",
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True

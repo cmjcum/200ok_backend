@@ -66,11 +66,11 @@ class User(AbstractBaseUser):
 
 class UserInfo(models.Model):
     birthday = models.DateField()
-    portrait = models.FileField()
+    portrait = models.URLField()
     dormitory = models.ForeignKey("dormitory.Dormitory", on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
 
 class OriginalPic(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    pic = models.FileField(upload_to='original/')
+    pic = models.URLField()
