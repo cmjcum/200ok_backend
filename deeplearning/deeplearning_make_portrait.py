@@ -142,10 +142,10 @@ def make_portrait(q, img_path, user_id):
     filename = f'{user_id}.gif'
     imageio.mimsave(filename, new_frames, fps=fps)
 
-    os.system(f'aws s3 cp {filename} s3://my-sparta --acl public-read')
+    os.system(f'aws s3 cp {filename} s3://200okhg --acl public-read')
     # os.system(f'rm {filename}')
 
-    portrait_url = f'https://my-sparta.s3.ap-northeast-2.amazonaws.com/{user_id}.gif'
+    portrait_url = f'https://200okhg.s3.ap-northeast-2.amazonaws.com/{user_id}.gif'
 
     cv2.destroyAllWindows()
     q.put(portrait_url)

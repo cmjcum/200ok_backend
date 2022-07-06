@@ -55,12 +55,12 @@ class MainView(APIView):
         s3 = boto3.client('s3')
         s3.put_object(
             ACL="public-read",
-            Bucket="my-sparta",
+            Bucket="200okhg",
             Body=pic,
             Key=filename,
             ContentType=pic.content_type)
 
-        url = f'https://my-sparta.s3.ap-northeast-2.amazonaws.com/{filename}'
+        url = f'https://200okhg.s3.ap-northeast-2.amazonaws.com/{filename}'
         request.data['pic'] = url
 
         original_pic_serializer = OriginalPicSerializer(data=request.data)
