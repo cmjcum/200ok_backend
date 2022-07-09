@@ -1,11 +1,7 @@
-from dataclasses import fields
-from django.forms import PasswordInput
 from rest_framework import serializers
 
 from user.models import User as UserModel
-
-from user.models import OriginalPic
-from user.models import UserInfo
+from user.models import OriginalPic, UserInfo
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -33,3 +29,5 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserInfo
         fields = ["user", "portrait", "birthday", "dormitory"]
+
+        

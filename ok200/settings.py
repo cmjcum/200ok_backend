@@ -148,11 +148,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [ # session 혹은 token을 인증 할 클래스 설정
-        # 'rest_framework.authentication.TokenAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
         # simplejwt 추가
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # pip install djangorestframework-simplejwt 인스톨 코드
     ],
     'DEFAULT_PARSER_CLASSES': [ # request.data 속성에 액세스 할 때 사용되는 파서 지정
         'rest_framework.parsers.JSONParser',

@@ -1,23 +1,18 @@
-from dataclasses import field
-import django.apps
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions, status
-from django.shortcuts import render, redirect
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .serializers import BoardSerializer, UserInfoSerializer, DormitorySerializer, DormitoriesSerializer
 from .models import Board
-from user.models import User, UserInfo
+from user.models import User
 from dormitory.models import Dormitory
 
 
 class LoungeView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [JWTAuthentication]
-    # permission_classes = [permissions.IsAuthenticated]
-
 
     # TODO  라운지 페이지 띄우기
     def get(self, request):
@@ -68,7 +63,6 @@ class LoungeView(APIView):
 
         if board_serializer.is_valid():
             board_serializer.save()
-            # return redirect('lounge')
             return Response(board_serializer.data, status=status.HTTP_200_OK)
 
         return Response(board_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -77,12 +71,10 @@ class LoungeView(APIView):
     def put(self, request, obj_id):
         comment = Board.objects.get(id=obj_id)
         board_serializer = BoardSerializer(comment, data=request.data, partial=True)
-        # print(f'author: {comment.author}, user: {request.user.username}')
 
         if comment.author == request.user:
             if board_serializer.is_valid():
                 board_serializer.save()
-                # return redirect('lounge')
                 return Response(board_serializer, status=status.HTTP_200_OK)
 
             return Response(board_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -97,3 +89,5 @@ class LoungeView(APIView):
             return Response({'message': '삭제완료!'}, status=status.HTTP_200_OK)
             
         return Response({'message': '이 글을 작성한 사람이 아닙니다!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        

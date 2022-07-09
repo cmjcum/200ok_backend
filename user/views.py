@@ -1,21 +1,17 @@
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions, status
-from user import serializers
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 
+from multiprocessing import Process, Queue
+import boto3
+
+from user import serializers
 from user.serializers import UserSerializer
+from user.serializers import OriginalPicSerializer
+from user.serializers import UserInfoSerializer
 
 from deeplearning.deeplearning_make_portrait import make_portrait
-from multiprocessing import Process, Queue
-from user.serializers import OriginalPicSerializer
-from rest_framework.permissions import IsAuthenticated
-from .models import OriginalPic
-from .serializers import UserInfoSerializer
-
-import boto3
 
 
 class UserView(APIView):
@@ -37,29 +33,25 @@ q = Queue()
 p = None
 class MainView(APIView):
     permission_classes = [IsAuthenticated]
-
-    def get(self, requeset):
-        return Response({'msg': 'success'})
     
     def post(self, request):
         global q, p
-
+        
         user_id = request.user.id
         request.data['user'] = user_id
-        print(request.data)
+        
         pic = request.data.pop('pic')[0]
         filename = pic.name
-        print(filename)
 
         s3 = boto3.client('s3')
         s3.put_object(
             ACL="public-read",
-            Bucket="200okbucket",
+            Bucket="my-sparta",
             Body=pic,
             Key=filename,
             ContentType=pic.content_type)
 
-        url = f'https://200okbucket.s3.ap-northeast-2.amazonaws.com/{filename}'
+        url = f'https://my-sparta.s3.ap-northeast-2.amazonaws.com/{filename}'
         request.data['pic'] = url
 
         original_pic_serializer = OriginalPicSerializer(data=request.data)
@@ -72,32 +64,27 @@ class MainView(APIView):
 
             return Response({'msg': 'send'}, status=status.HTTP_200_OK)
 
-        print(original_pic_serializer.error_messages)
-
         return Response({"error": "failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class InfoView(APIView):
-
-    def get(self, request):
-        return Response({'msg': 'get'}, status=status.HTTP_200_OK)
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         global p, q
-        print(request.data)
+        
         if p is not None:
             p.join()
 
             request.data['user'] = request.user.id
             request.data['portrait'] = q.get()
 
-            print(request.data)
-
             userinfo_serializer = UserInfoSerializer(data=request.data)
+            print(userinfo_serializer)
 
             if userinfo_serializer.is_valid():
                 userinfo_serializer.save()
                 return Response({'msg': 'success'}, status=status.HTTP_200_OK)
-        print(userinfo_serializer.error_messages)
+
         return Response({'error': 'failed'}, status=status.HTTP_400_BAD_REQUEST)
+        

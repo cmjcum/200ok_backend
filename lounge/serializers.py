@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from deeplearning.deeplearning_make_portrait import make_portrait
 from .models import Board
-from user.models import User, UserInfo
+from user.models import User
 from dormitory.models import Dormitory
 from django.utils import timezone, dateformat
 
@@ -65,7 +64,6 @@ class BoardSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         cemment = Board(**validated_data)
-        print(cemment)
         cemment.save()
 
         return validated_data
@@ -101,3 +99,4 @@ class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "fullname", "portrait", "dormitory_name"]
+
